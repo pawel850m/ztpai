@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(path = "signin")
+@RequestMapping(path = "api/v1/auth/signin")
 public class LoginController {
 
     private final LoginService loginService;
@@ -16,7 +16,7 @@ public class LoginController {
         this.loginService = loginService;
     }
 
-    @PostMapping
+    @GetMapping
     public String login(@RequestBody User user){
         return loginService.login(user);
     }

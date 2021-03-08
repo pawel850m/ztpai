@@ -20,11 +20,10 @@ public class RegisterService {
         this.passwordConfig = passwordConfig;
     }
 
-    public String register(User user){
+    public void register(User user){
         user.setPassword(passwordConfig.passwordEncoder().encode(user.getPassword()));
         user.setCreated_at(LocalDateTime.now());
         user.setEnabled(true);
         userRepository.save(user);
-        return "registered";
     }
 }
