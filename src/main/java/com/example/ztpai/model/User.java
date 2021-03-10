@@ -45,12 +45,10 @@ public class User {
             nullable = false
     )
     private LocalDateTime created_at;
-//    @Column(updatable = false,
-//            nullable = false
-//    )
     private String salt;
     @Column(
             nullable = false
     )
     private String password;
+    private String role;
 }

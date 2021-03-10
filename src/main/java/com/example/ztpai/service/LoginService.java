@@ -15,10 +15,7 @@ public class LoginService {
         this.userRepository = userRepository;
     }
 
-    public String login(User user){
-        if(userRepository.findUserByEmail(user.getEmail()).isPresent())
+    public String login(){
             return "You are logged now!";
-        else
-            return "Wrong login!";
     }
 }
