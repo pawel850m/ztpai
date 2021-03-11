@@ -18,19 +18,19 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Date;
 
-public class JwtUsernamePasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class JWTProvider extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
 
-    public JwtUsernamePasswordAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public JWTProvider(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
     @SneakyThrows
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException {
-        UsernamePasswordAuthenticationRequest authenticationRequest = new ObjectMapper()
-                .readValue(request.getInputStream(), UsernamePasswordAuthenticationRequest.class);
+        AuthenticationRequest authenticationRequest = new ObjectMapper()
+                .readValue(request.getInputStream(), AuthenticationRequest.class);
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 authenticationRequest.getUsername(),
                 authenticationRequest.getPassword()

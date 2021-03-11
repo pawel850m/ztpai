@@ -1,6 +1,7 @@
 package com.example.ztpai.security;
 
-import com.example.ztpai.jwt.JwtUsernamePasswordAuthenticationFilter;
+import com.example.ztpai.jwt.JwtTokenVerifier;
+import com.example.ztpai.jwt.JWTProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -33,14 +34,17 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .addFilter(new JwtUsernamePasswordAuthenticationFilter(authenticationManager()))
                 .authorizeRequests()
 //                .antMatchers("/api/v1/auth/register").permitAll()
-                .antMatchers("/").permitAll()
-//                .antMatchers("/api/v1/users").hasAuthority("ADMIN")
+                .antMatchers("/api/v1/auth/register").permitAll()
+                .antMatchers("/login").permitAll()
+                .antMatchers("/api/v1/users").hasAuthority("ADMIN")
                 .anyRequest()
-                .authenticated();
+                .authenticated()
+                .and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .addFilter(new JWTProvider(authenticationManager()))
+                .addFilterAfter(new JwtTokenVerifier(), JWTProvider.class);
     }
 }
