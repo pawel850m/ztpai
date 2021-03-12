@@ -27,8 +27,8 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity register(@RequestBody Project project){
+    public ResponseEntity createProject (@RequestBody Project project){
         projectService.addProject(project);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.CREATED);
     }
 }
