@@ -1,30 +1,63 @@
 package com.example.ztpai.service;
 
+import com.example.ztpai.dto.RegistrationRequest;
+import com.example.ztpai.email.MailContent;
+import com.example.ztpai.email.MailService;
 import com.example.ztpai.model.User;
+import com.example.ztpai.model.VerificationToken;
 import com.example.ztpai.repository.UserRepository;
+import com.example.ztpai.repository.VerificationTokenRepository;
 import com.example.ztpai.security.PasswordConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.ztpai.token.Token;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class RegisterService {
 
     private final UserRepository userRepository;
     private final PasswordConfig passwordConfig;
+    private final VerificationTokenRepository verificationTokenRepository;
+    private final MailContent mailContent;
+    private final MailService mailService;
 
-    @Autowired
-    public RegisterService(UserRepository userRepository, PasswordConfig passwordConfig) {
-        this.userRepository = userRepository;
-        this.passwordConfig = passwordConfig;
-    }
-
-    public void register(User user){
-        user.setPassword(passwordConfig.passwordEncoder().encode(user.getPassword()));
+    public ResponseEntity register(RegistrationRequest request){
+        User user = new User();
+        user.setPassword(passwordConfig.passwordEncoder().encode(request.getPassword()));
         user.setCreated_at(LocalDateTime.now());
-        user.setEnabled(true);
+        user.setEnabled(false);
         user.setRole("USER");
+        user.setFirstName(request.getFirstname());
+        user.setLastName(request.getLastname());
+        user.setEmail(request.getEmail());
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(new Token().generate());
+        verificationTokenRepository.save(verificationToken);
+        user.setVerificationToken(verificationToken);
         userRepository.save(user);
+        mailContent.setMessage("http://localhost:8080/api/v1/auth/register/"+verificationToken.getToken());
+        mailContent.setSubject("Account activation");
+        mailContent.setRecipient(user.getEmail());
+        mailService.sendMail(mailContent);
+        return new ResponseEntity(HttpStatus.CREATED);
+    }
+    public ResponseEntity verifyToken(String token){
+        Optional<VerificationToken> verificationToken = verificationTokenRepository.findByToken(token);
+        if(verificationToken.isPresent()){
+            Optional<User> user = userRepository
+                    .findUserByVerificationToken(verificationTokenRepository.findByToken(token));
+            if(user.isPresent()){
+                user.get().setEnabled(true);
+                userRepository.save(user.get());
+                return new ResponseEntity(HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity(HttpStatus.NOT_FOUND);
     }
 }
