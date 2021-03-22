@@ -6,10 +6,7 @@ import com.example.ztpai.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1/auth/register")
@@ -25,5 +22,9 @@ public class RegisterController {
     @PostMapping
     public ResponseEntity register(@RequestBody RegistrationRequest request){
         return registerService.register(request);
+    }
+    @GetMapping("/{token}")
+    public ResponseEntity activateAccount(@PathVariable String token){
+        return registerService.verifyToken(token);
     }
 }

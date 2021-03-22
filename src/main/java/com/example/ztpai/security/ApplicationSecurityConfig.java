@@ -36,11 +36,11 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/login").permitAll()
                 .antMatchers("/api/v1/users").hasAuthority("ADMIN")
                 .anyRequest()
-                .authenticated()
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .addFilter(new JWTProvider(authenticationManager()))
-                .addFilterAfter(new JwtTokenVerifier(), JWTProvider.class);
+                .authenticated();
+//                .and()
+//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//                .addFilter(new JWTProvider(authenticationManager()))
+//                .addFilterAfter(new JwtTokenVerifier(), JWTProvider.class);
     }
 }
