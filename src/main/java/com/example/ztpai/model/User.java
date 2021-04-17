@@ -1,57 +1,72 @@
 package com.example.ztpai.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
-@Table(
-        name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "user_email_unique", columnNames = "email")
-        }
-)
-@Entity(name = "User")
+@Table(name="users")
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false,
             nullable = false
     )
-    private Long id;
-    @Column(updatable = false,
+    private Long UserId;
+
+    @Column(
             nullable = false
     )
     @NotBlank
     private String firstName;
-    @Column(updatable = false,
+
+    @Column(
             nullable = false
     )
     @NotBlank
     private String lastName;
+
     @Email
-    @Column(updatable = false,
+    @Column(
             nullable = false
     )
     private String email;
     private Boolean enabled;
-    @Column(updatable = false,
+
+    @Column(
             nullable = false
     )
     private LocalDateTime created_at;
+
     @Column(
             nullable = false
     )
     @NotBlank
     private String password;
-    private String role;
-    @OneToOne(fetch = FetchType.LAZY)
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.REFRESH})
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private VerificationToken verificationToken;
+
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
 }
