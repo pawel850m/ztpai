@@ -1,10 +1,12 @@
 package com.example.ztpai.security;
 
 import com.example.ztpai.jwt.JwtFilter;
+import com.example.ztpai.service.MyUserDetailsService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -14,7 +16,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -24,7 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordConfig passwordConfig;
-    private final UserDetailsService userDetailsService;
+    private final MyUserDetailsService myUserDetailsService;
 
     @Bean(BeanIds.AUTHENTICATION_MANAGER)
     @Override
@@ -33,7 +34,6 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/api/v1/auth/**");
         web.ignoring().antMatchers("/v2/api-docs",
                 "/configuration/ui",
                 "/swagger-resources/**",
@@ -42,31 +42,28 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 "/webjars/**");
     }
 
+    @Bean
+    public JwtFilter authJwtTokenFilter() {
+        return new JwtFilter();
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+        http.cors().disable().csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()
+                .antMatchers(HttpMethod.OPTIONS, "/api/v1/**").permitAll()
                 .antMatchers("/api/v1/auth/**").permitAll()
-                .antMatchers("/api/v1/myprojects/showallprojects").hasAuthority("USER")
-                .antMatchers("/login").permitAll()
-                .antMatchers("/api/v1/users").hasAuthority("ADMIN")
-                .antMatchers("/v2/api-docs",
-                        "/configuration/ui",
-                        "/swagger-resources/**",
-                        "/configuration/security",
-                        "/swagger-ui.html",
-                        "/webjars/**")
-                .permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.addFilterBefore(new JwtFilter(userDetailsService), UsernamePasswordAuthenticationFilter.class);
+                .antMatchers("/api/v1/project/**").hasAnyAuthority("ADMIN", "USER")
+                .antMatchers("/api/v1/ticket/**").hasAnyAuthority("ADMIN", "USER")
+                .antMatchers("/api/v1/user/**").hasAnyAuthority("ADMIN")
+                .anyRequest().authenticated();
+        http.addFilterBefore(authJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Autowired
-    protected void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(myUserDetailsService)
                 .passwordEncoder(passwordConfig.passwordEncoder());
     }
 }
