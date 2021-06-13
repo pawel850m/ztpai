@@ -34,9 +34,10 @@ public class TicketService {
         this.userRepository = userRepository;
     }
 
-    private List<TicketResponse> mapTicketToTicketResponse(List<Ticket> tickets){
+    public List<TicketResponse> getAllTickets() {
+        List<Ticket> tickets = ticketRepository.findAll();
         List<TicketResponse> ticketResponses = new ArrayList<>();
-        for(Ticket ticket: tickets){
+        for(Ticket ticket: tickets) {
             TicketResponse ticketResponse = TicketResponse.builder()
                     .title(ticket.getTitle())
                     .created_at(ticket.getCreated_at())
@@ -54,11 +55,6 @@ public class TicketService {
             ticketResponses.add(ticketResponse);
         }
         return ticketResponses;
-    }
-
-    public List<TicketResponse> getAllTickets() {
-        List<Ticket> tickets = ticketRepository.findAll();
-        return mapTicketToTicketResponse(tickets);
     }
 
     public void createTicket(TicketRequest ticketRequest, Long projectId) {

@@ -28,7 +28,8 @@ public class UserService {
         this.passwordConfig = passwordConfig;
     }
 
-    private List<UserResponse> mapUserToUserResponse(List<User> users){
+    public List<UserResponse> getAllUsers(){
+        List<User> users = userRepository.findAll();
         List<UserResponse> userResponses = new ArrayList<>();
         for (User user: users) {
             UserResponse userResponse = UserResponse.builder()
@@ -43,22 +44,6 @@ public class UserService {
             userResponses.add(userResponse);
         }
         return userResponses;
-    }
-
-    public List<UserResponse> getAllUsers(){
-        List<User> users = userRepository.findAll();
-        return mapUserToUserResponse(users);
-    }
-
-    public UserResponse getUser(Long userId){
-        Optional<User> user = userRepository.findById(userId);
-        return user.map(value -> UserResponse.builder()
-                .created_at(value.getCreated_at())
-                .email(value.getEmail())
-                .firstName(value.getFirstName())
-                .lastName(value.getLastName())
-                .enabled(value.getEnabled())
-                .build()).orElse(null);
     }
 
     public void deleteUser(Long userId){

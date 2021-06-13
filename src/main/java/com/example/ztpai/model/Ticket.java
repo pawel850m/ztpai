@@ -62,8 +62,7 @@ public class Ticket {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany
     @JoinTable(name = "user_tickets",
             joinColumns = @JoinColumn(name = "ticket_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
